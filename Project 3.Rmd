@@ -1,0 +1,40 @@
+---
+title: "Project 3"
+author: "Matthew Roland"
+date: "2023-10-17"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(jsonlite)
+library(httr)
+```
+
+## 
+
+```{r}
+##Define the API Key
+api_key <- 'AIzaSyAHTiNfCrJXM4-JdDtteyJflaR-rCI9yxc'
+
+##The query that we will use to generate our searches and data
+query <- "top data science skills"
+
+##The ID for a programmable search engine I generated via Google API
+CSE <- 'b60f1532a54ae4588'
+
+##This code will generate a list of 10 websites in JSON format, using the query parameter
+response <- GET(
+  url = "https://www.googleapis.com/customsearch/v1",
+  query = list(
+    key = api_key,
+    cx = CSE,
+    q = query
+  )
+)
+
+##This code will parse the JSON list into an R data structure
+results <- fromJSON(content(response, "text"))
+search <- results$items
+```
+

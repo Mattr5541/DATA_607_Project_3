@@ -1,14 +1,16 @@
 ---
 title: "Project 3"
-author: "Matthew Roland"
+author: "Matthew Roland, Jean Jimenez, Kelly Eng"
 date: "2023-10-17"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 library(jsonlite)
 library(httr)
+library(rvest)
 ```
 
 ## 
@@ -38,3 +40,175 @@ results <- fromJSON(content(response, "text"))
 search <- results$items
 ```
 
+Web scraping the top 10 sites
+```{r}
+# Store the links here
+links_to_site <- search$link
+
+# The html data scraped from each site will be stored here
+html_data <- lapply(links_to_site, read_html)
+
+# Function to remove numeric prefixes if there is any, the : post fix along with trailing white spaces
+remove_numeric_prefix_whitespaces <- function(input_vector) {
+  cleaned_vector <- gsub("^\\d+\\)|\\d+\\.\\s*|:$", "", input_vector)
+  cleaned_vector <- trimws(cleaned_vector)
+  return(cleaned_vector)
+}
+```
+
+Scraping data from the first website
+```{r first-website}
+first_site <- html_data[[1]]
+
+# Technical skills are in an un-ordered list in this site
+scraped_li_from_first_site <- first_site |>
+  html_elements("article ul li") |>
+  html_text2()
+# The first two on the lists are not part of it, so remove them & keep the rest
+technical_skills_from_first_site <- scraped_li_from_first_site[3:12]
+
+
+# For the first website, the top 20+ skills are in the h3 tag nested inside an article tag after the above list
+scraped_h3_from_first_site <- first_site |>
+  html_elements("article h3") |>
+  html_text2()
+
+scraped_h3_from_first_site <- remove_numeric_prefix_whitespaces(scraped_h3_from_first_site[1:24])
+
+# From the scraped h3, the first 17 are technical skills, while the rest are non-technical
+technical_skills_from_first_site <- c(technical_skills_from_first_site, scraped_h3_from_first_site[1:17])
+non_technical_skills_from_first_site <- scraped_h3_from_first_site[18:24]
+
+technical_skills_from_first_site
+non_technical_skills_from_first_site
+```
+
+Scraping Data from the Second Site:
+```{r second-site}
+# Unfortunately it requires an account to view the article, only thing you can get is the first skill
+second_site <- html_data[[2]]
+second_site |>
+  html_elements("h1") |>
+  html_text2()
+
+print(links_to_site[2])
+
+# Fortunately, you can view the whole thing in wayback machine
+second_site <- read_html("http://web.archive.org/web/20200106015115/https://towardsdatascience.com/top-10-skills-for-a-data-scientist-in-2020-2b8e6122a742?gi=a52933951057")
+
+top_10_skills_from_second_site <- second_site |>
+  html_elements("h1") |>
+  html_text2()
+
+# The top 10 skills are numbered so we need to remove the prefixes, it also starts in the second h1 tag
+top_10_skills_from_second_site <- remove_numeric_prefix_whitespaces(top_10_skills_from_second_site[2:11])
+
+top_10_skills_from_second_site
+```
+
+Scraping Data from Third Website
+```{r third-site}
+third_site <- html_data[[3]]
+
+# The skills are in the h2 tag in this case
+top_7_skills_from_third_site <- third_site |>
+  html_elements("h2") |>
+  html_text2()
+
+# Remove the numeric prefixes
+top_7_skills_from_third_site <- remove_numeric_prefix_whitespaces(top_7_skills_from_third_site)
+
+top_7_skills_from_third_site
+```
+
+Scraping Data from the Fourth Website
+```{r fourth-site}
+fourth_site <- html_data[[4]]
+
+top_7_skills_from_fourth_site <- fourth_site |>
+  html_elements("h3") |>
+  html_text2()
+
+
+top_7_skills_from_fourth_site <- top_7_skills_from_fourth_site[c(1, 3, 5, 7, 9, 11, 12)]
+top_7_skills_from_fourth_site <- remove_numeric_prefix_whitespaces(top_7_skills_from_fourth_site)
+
+top_7_skills_from_fourth_site
+```
+
+Scraping Data from the Fifth Website
+```{r fifth-site}
+fifth_site <- html_data[[5]]
+
+# This website only contains 15 skills divided into technical and non-technical
+# No need to process it because there's no numeric prefixes
+top_15_skills_from_fifth_site <- fifth_site |>
+  html_elements("span.listed-menu h3") |>
+  html_text2()
+
+top_15_skills_from_fifth_site
+```
+
+Scraping Data from the Sixth Website
+```{r sixth-site}
+sixth_site <- html_data[[6]]
+
+top_16_skills_from_sixth_site <- sixth_site |>
+  html_elements('h3.wp-block-heading') |>
+  html_text2()
+
+# The stuff after the 16th skill is just telling people to go to their boot camp
+top_16_skills_from_sixth_site <- top_16_skills_from_sixth_site[1:16]
+
+top_16_skills_from_sixth_site
+```
+
+Scraping Data from the Seventh Website
+```{r seventh-site}
+seventh_site <- html_data[[7]]
+
+# This is only letting me get things from the person that made the post on reddit & not the comments
+top_skills_from_seventh_site <- seventh_site |>
+  html_elements('p') |>
+  html_text2()
+```
+
+Scraping Data from the Eighth Website
+```{r eigth-site}
+eighth_site <- html_data[[8]]
+
+top_10_skills_from_eighth_site <- eighth_site |>
+  html_elements('h4') |>
+  html_text2()
+
+# Remove the numeric prefixes
+top_10_skills_from_eighth_site <- remove_numeric_prefix_whitespaces(top_10_skills_from_eighth_site[1:10])
+
+top_10_skills_from_eighth_site
+```
+
+Scraping Data from the Ninth Website
+```{r ninth-site}
+ninth_site <- html_data[[9]]
+
+top_10_skills_from_ninth_site <- ninth_site |>
+  html_elements('h2') |>
+  html_text2()
+
+top_10_skills_from_ninth_site <- remove_numeric_prefix_whitespaces(top_10_skills_from_ninth_site[1:10])
+
+top_10_skills_from_ninth_site
+```
+
+Scraping Data from the Tenth Website
+```{r tenth-site}
+tenth_site <- html_data[[10]]
+
+top_skills_from_tenth_site <- tenth_site |>
+  html_elements('h3') |>
+  html_text2()
+
+top_skills_from_tenth_site <- remove_numeric_prefix_whitespaces(top_skills_from_tenth_site[c(2:9, 11:14)])
+
+top_skills_from_tenth_site
+```

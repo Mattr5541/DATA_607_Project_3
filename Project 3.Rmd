@@ -5,12 +5,34 @@ date: "2023-10-17"
 output: pdf_document
 ---
 
+# Team Android Project #3
+
+## Introduction
+
+The advent of data science has created a paradigm shift in how we approach problem-solving across various industries. Data science skills are increasingly becoming indispensable, but what skills are most valued in this domain? Our class was tasked with a collaborative project to explore this very question.
+
+Our objective is to identify the most valued skills in data science through data-driven analysis and to collaborate effectively as a virtual team and share our findings in a presentation.
+
+We used R programming to automate the process of data collection, transformation, and analysis.
+
+Employed various R packages like `tidyverse`, `jsonlite`, `httr`, `rvest`, and `ggplot2` for web scraping, data manipulation, and visualization.
+
+We utilized Google Custom Search Engine API to gather data from top websites related to data science skills.
+
+We stored the acquired data in a normalized relational database. We then conducted exploratory data analysis to classify and rank the skills based on their frequency.
+
+## Search Query
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(jsonlite)
 library(httr)
 library(rvest)
+library(stringdist)
+library(knitr)
+library(ggplot2)
+library(wordcloud)
 ```
 
 ## 
@@ -40,13 +62,22 @@ results <- fromJSON(content(response, "text"))
 search <- results$items
 ```
 
+## Web Scraping
+
 Web scraping the top 10 sites
+
 ```{r}
 # Store the links here
-links_to_site <- search$link
+#links_to_site <- search$link
+
+links_to_site=read.csv(url("https://raw.githubusercontent.com/Mattr5541/DATA_607_Project_3/main/links_to_site.csv"))
+
+actual_links_to_site=links_to_site$x
 
 # The html data scraped from each site will be stored here
-html_data <- lapply(links_to_site, read_html)
+
+html_data <- lapply(actual_links_to_site, read_html)
+
 
 # Function to remove numeric prefixes if there is any, the : post fix along with trailing white spaces
 remove_numeric_prefix_whitespaces <- function(input_vector) {
@@ -57,8 +88,10 @@ remove_numeric_prefix_whitespaces <- function(input_vector) {
 ```
 
 Scraping data from the first website
+
 ```{r first-website}
 first_site <- html_data[[1]]
+
 
 # Technical skills are in an un-ordered list in this site
 scraped_li_from_first_site <- first_site |>
@@ -84,6 +117,7 @@ non_technical_skills_from_first_site
 ```
 
 Scraping Data from the Second Site:
+
 ```{r second-site}
 # Unfortunately it requires an account to view the article, only thing you can get is the first skill
 second_site <- html_data[[2]]
@@ -107,6 +141,7 @@ top_10_skills_from_second_site
 ```
 
 Scraping Data from Third Website
+
 ```{r third-site}
 third_site <- html_data[[3]]
 
@@ -122,6 +157,7 @@ top_7_skills_from_third_site
 ```
 
 Scraping Data from the Fourth Website
+
 ```{r fourth-site}
 fourth_site <- html_data[[4]]
 
@@ -137,6 +173,7 @@ top_7_skills_from_fourth_site
 ```
 
 Scraping Data from the Fifth Website
+
 ```{r fifth-site}
 fifth_site <- html_data[[5]]
 
@@ -150,6 +187,7 @@ top_15_skills_from_fifth_site
 ```
 
 Scraping Data from the Sixth Website
+
 ```{r sixth-site}
 sixth_site <- html_data[[6]]
 
@@ -164,6 +202,7 @@ top_16_skills_from_sixth_site
 ```
 
 Scraping Data from the Seventh Website
+
 ```{r seventh-site}
 seventh_site <- html_data[[7]]
 
@@ -174,6 +213,7 @@ top_skills_from_seventh_site <- seventh_site |>
 ```
 
 Scraping Data from the Eighth Website
+
 ```{r eigth-site}
 eighth_site <- html_data[[8]]
 
@@ -188,6 +228,7 @@ top_10_skills_from_eighth_site
 ```
 
 Scraping Data from the Ninth Website
+
 ```{r ninth-site}
 ninth_site <- html_data[[9]]
 
@@ -201,6 +242,7 @@ top_10_skills_from_ninth_site
 ```
 
 Scraping Data from the Tenth Website
+
 ```{r tenth-site}
 tenth_site <- html_data[[10]]
 
@@ -211,4 +253,217 @@ top_skills_from_tenth_site <- tenth_site |>
 top_skills_from_tenth_site <- remove_numeric_prefix_whitespaces(top_skills_from_tenth_site[c(2:9, 11:14)])
 
 top_skills_from_tenth_site
+```
+
+## Cleaning Data
+
+The data cleaning phase was a crucial step in refining the raw data we scraped from various websites. We began by aggregating the lists of skills from each source into a single collection, labeled `all_top_skills`. To ensure uniformity and facilitate easier analysis, all skill names were converted to lowercase and any special characters were removed, yielding a new dataset called `cleaned_top_skills`.
+
+To categorize the skills in a meaningful way, we defined a standard set of skill categories, such as "Statistical Analysis," "Machine Learning & AI," and "Data Visualization," among others. These predefined categories acted as a guideline for mapping the cleaned skills. We then initiated an empty list, `mapped_skills`, to store these categorized skills.
+
+A loop was run through each skill in `cleaned_top_skills`, using regex matching to classify the skill into one of the predefined categories. For instance, skills containing terms like "statistics" or "probability" were mapped to the "Statistical Analysis" category. This process was repeated for each skill in the dataset, allowing us to aggregate them into broader categories meaningfully.
+
+After this categorization, we calculated the frequency of each skill category to understand its prevalence in the data science industry. This was stored in a table called `aggregated_skills`, which was then sorted in descending order based on frequency to create `sorted_skills_df`. The resulting DataFrame served as the cleaned and organized dataset ready for further analysis and visualization.
+
+```{r}
+#combining all top skills
+
+all_top_skills= c(technical_skills_from_first_site,top_10_skills_from_second_site,top_7_skills_from_third_site,top_7_skills_from_fourth_site,top_15_skills_from_fifth_site,top_16_skills_from_sixth_site,top_10_skills_from_eighth_site,top_10_skills_from_ninth_site,top_skills_from_tenth_site)
+
+
+# Convert to lowercase and remove special chars
+cleaned_top_skills = tolower(gsub("[^[:alnum:] ]", "", all_top_skills))
+
+#predifined list of skills
+standard_skills <- c("Statistical Analysis", 
+                     "Machine Learning & AI", 
+                     "Data Processing & Wrangling", 
+                     "Data Visualization", 
+                     "Programming & Coding", 
+                     "Big Data & Cloud Computing", 
+                     "Software Tools & Technologies", 
+                     "Business & Communication Skills", 
+                     "Problem Solving & Critical Thinking",
+                     "Mathematics & Computational Skills",
+                     "Data Management & Transformation",
+                     "Modeling & Algorithms",
+                     "Soft Skills",
+                     "Specialized Technologies")
+
+# empty list
+mapped_skills <- list()
+
+# go through each skill
+for(skill in cleaned_top_skills) {
+  skill_lower = tolower(skill)  
+  
+  if (grepl("statistics|probability", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Statistical Analysis")
+  } else if (grepl("machine learning|deep learning|neural networks|ai|nlp", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Machine Learning & AI")
+  } else if (grepl("data wrangling|data processing|data extraction|database management", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Data Processing & Wrangling")
+  } else if (grepl("data visualization|visualization tools", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Data Visualization")
+  } else if (grepl("programming|coding|software engineering|devops|web scraping", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Programming & Coding")
+  } else if (grepl("big data|cloud computing|hadoop|nosql|sql|data mining", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Big Data & Cloud Computing")
+  } else if (grepl("excel|sas|tools|technologies", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Software Tools & Technologies")
+  } else if (grepl("business|communication|storytelling|collaboration|decision making|strategy", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Business & Communication Skills")
+  } else if (grepl("problem solving|critical thinking|analytical|intellectual curiosity|attention to detail", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Problem Solving & Critical Thinking")
+  } else if (grepl("multivariate calculus|linear algebra|mathematics", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Mathematics & Computational Skills")
+  } else if (grepl("data wrangling|data extraction|database management|data management|transformation", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Data Management & Transformation")
+  } else if (grepl("model deployment|neural networks|algorithms", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Modeling & Algorithms")
+  } else if (grepl("problem solving|critical thinking|effective communication", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Soft Skills")
+  } else if (grepl("sas|devops|hadoop|specialized tools", skill_lower)) {
+    mapped_skills = append(mapped_skills, "Specialized Technologies")
+  } else {
+    mapped_skills = append(mapped_skills, "Other")
+  }
+}
+
+
+aggregated_skills = table(unlist(mapped_skills))
+
+sorted_skills = sort(aggregated_skills, decreasing = TRUE)
+
+sorted_skills_df = as.data.frame(sorted_skills)
+
+
+colnames(sorted_skills_df) = c("Skill Category", "Frequency")
+
+
+
+
+
+```
+
+## Data Visualization
+
+After the data cleaning process, we moved on to the data visualization. Initially, we used the `kable` function to display the aggregated and sorted skill categories in a tabular form. However, to offer a more intuitive understanding, we employed `ggplot2` to create a horizontal bar chart, sorting the skill categories based on their frequency of occurrence.
+
+In addition to the bar chart, we used a word cloud to emphasize the most frequent skills visually. The word cloud allowed us to represent the skill categories as words displayed in varying sizes, which directly correlate with their frequency. This provided another angle of understanding the distribution of important skills in a less structured but more visually impactful way.
+
+Finally, we wanted to understand the proportion of each skill category in the entire dataset. We calculated these proportions and displayed them in two ways: a pie chart and another bar plot. The pie chart provided an immediate understanding of how each skill category compared to the whole, while the bar plot offered a similar perspective in a different visual form.
+
+```{r}
+kable(sorted_skills_df, caption = "Aggregated Skills Sorted in Descending Order")
+sorted_skills_df_filtered = subset(sorted_skills_df, sorted_skills_df$`Skill Category` != "Other")
+
+ggplot(sorted_skills_df_filtered, aes(x=reorder(`Skill Category`, -Frequency), y=Frequency)) +
+  geom_bar(stat="identity") +
+  coord_flip() +
+  labs(title="Distribution of Top Skills",
+       x="Skill Category",
+       y="Frequency") +
+  theme_minimal()
+```
+
+```{r}
+sorted_skills_df = as.data.frame(sorted_skills)
+
+
+sorted_skills_df = sorted_skills_df[sorted_skills_df$Var1 != "Other",]
+
+
+wordcloud(words = sorted_skills_df$Var1, 
+          freq = sorted_skills_df$Freq, 
+          min.freq = 2,  
+          max.words = 100,  
+          random.order = FALSE, 
+          rot.per = 0.2, 
+          scale=c(4, 0.5),  
+          colors = brewer.pal(8, "Dark2"))
+```
+
+```{r}
+#total occrences not other
+total_occurrences = sum(sorted_skills)
+
+#proportion to total
+proportion_skills = round((sorted_skills / total_occurrences) * 100, 2)
+
+# new table wih proportion
+new_table = data.frame("Skill" = names(proportion_skills), "Proportion (%)" = as.vector(proportion_skills))
+
+#pie chart
+pie(proportion_skills, labels = paste(names(proportion_skills), "\n", proportion_skills, "%"),
+    main = "Proportion of Skills",
+    col = rainbow(length(proportion_skills)),
+    cex = 0.8)
+
+
+```
+
+```{r}
+#bar plot
+
+barplot(proportion_skills, 
+        names.arg = names(proportion_skills), 
+        las = 2,
+        main = "Proportion of Skills (%)",
+        ylab = "Proportion (%)",
+        xlab = "Skills",
+        col = rainbow(length(proportion_skills)))
+
+```
+
+## Summary and Conclusion
+
+```{r}
+cat("-----------------------------------------------------------\n")
+cat("Summary and Conclusions Based on the Skill Distribution\n")
+cat("-----------------------------------------------------------\n")
+
+#rmv other
+if ('Other' %in% names(sorted_skills)) {
+  sorted_skills = sorted_skills[names(sorted_skills) != 'Other']
+}
+
+#calc prop
+proportion_skills = round((sorted_skills / total_occurrences) * 100, 2)
+
+#sort
+sorted_skills = sort(sorted_skills, decreasing = TRUE)
+
+#top 3
+top_skills = head(sorted_skills, 3)
+cat("Top 3 Most Frequent Skills:\n")
+for(i in 1:3) {
+  skill_name = names(top_skills)[i]
+  skill_freq = top_skills[i]
+  skill_prop = proportion_skills[i]
+  cat(paste(i, ". ", skill_name, "(", skill_freq, "occurrences, ", skill_prop, "%)", "\n"))
+}
+
+#least freq
+least_skills = tail(sorted_skills, 3)
+cat("\nLeast Frequent Skills:\n")
+for(i in 1:3) {
+  skill_name = names(least_skills)[i]
+  skill_freq = least_skills[i]
+  skill_prop = proportion_skills[i]
+  cat(paste(i, ". ", skill_name, "(", skill_freq, "occurrences, ", skill_prop, "%)", "\n"))
+}
+
+cat("\n-----------------------------------------------------------\n")
+
+# General Conclusions
+cat("General Conclusions:\n")
+cat("1. Machine Learning & AI is the most sought-after skill, indicating a strong demand in this area.\n")
+cat("2. Big Data & Cloud Computing and Business & Communication Skills are equally important, showing the need for both technical and soft skills.\n")
+cat("3. Skills like Problem Solving & Critical Thinking are less frequent, suggesting they are either specialized or assumed skills.\n")
+
+cat("-----------------------------------------------------------\n")
+
+
+
 ```

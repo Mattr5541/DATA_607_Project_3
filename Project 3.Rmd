@@ -76,7 +76,7 @@ We first start by reading the CSV file from a GitHub URL using `read.csv()`. The
 
 Note, some site accesses were denied. Therefore, we edited the search result links to wayback machine archived linked in order to access them.
 
-Lastly, a function called `remove_numeric_prefix_whitespaces` is madeto clean up the scraped data by removing any numeric prefixes and trailing white spaces from a given vector of strings.
+Lastly, a function called `remove_numeric_prefix_whitespaces` is made to clean up the scraped data by removing any numeric prefixes and trailing white spaces from a given vector of strings.
 
 ```{r}
 links_to_site=read.csv(url("https://raw.githubusercontent.com/Mattr5541/DATA_607_Project_3/main/links_to_site.csv"))
@@ -88,8 +88,9 @@ html_data <- lapply(actual_links_to_site, read_html)
 # The html data scraped from each site will be stored here
 # It's only the first 9 because we get an access denied to the tenth website
 # Fortunately we can use waybackmachine for the tenth website
+# Google's algorithm is always updating the order so we don't know the exact order it'll be on a diffrent day that's why the the below line is commented out
 
-#html_data <- lapply(links_to_site[1:9], read_html)
+# html_data <- lapply(links_to_site[1:9], read_html)
 
 
 # Function to remove numeric prefixes if there is any, the : post fix along with trailing white spaces
@@ -135,15 +136,14 @@ non_technical_skills_from_first_site
 
 ```{r second-site}
 # Unfortunately it requires an account to view the article, only thing you can get is the first skill
-second_site <- html_data[[2]]
+second_site <- read_html("https://towardsdatascience.com/top-10-skills-for-a-data-scientist-in-2020-2b8e6122a742")
+
 second_site |>
   html_elements("h1") |>
   html_text2()
 
-print(links_to_site[2])
-
-# Fortunately, you can view the whole thing in wayback machine
-#second_site <- read_html("http://web.archive.org/web/20200106015115/https://towardsdatascience.com/top-10-skills-for-a-data-scientist-in-2020-2b8e6122a742?gi=a52933951057")
+# Fortunately, you can view the whole thing in wayback machine, the csv file contains the waybackmachine version
+second_site <- html_data[[2]]
 
 top_10_skills_from_second_site <- second_site |>
   html_elements("h1") |>
@@ -219,21 +219,21 @@ top_16_skills_from_sixth_site
 ### Scraping Data from the Seventh Website
 
 ```{r seventh-site}
-seventh_site <- html_data[[7]]
+seventh_site <- read_html("https://www.reddit.com/r/datascience/comments/y78uss/what_technologiesskills_should_a_data_scientist/")
 
 # This is only letting us get things from the person that made the post on reddit & not anything from the comments. The top comment uses the li tag for listing the top skills
 seventh_site |>
   html_elements('p') |>
   html_text2()
 
-# We have to use the old version of reddit in order to scrape results from the comments
-seventh_site <- read_html("https://old.reddit.com/r/datascience/comments/y78uss/what_technologiesskills_should_a_data_scientist/")
+# We have to use the old version of reddit in order to scrape results from the comments, that's why we had to use a csv file for access to the old version
+seventh_site <- html_data[[7]]
 
 top_skills_with_li_tag_on_reddit <- seventh_site |>
   html_elements('li') |>
   html_text2()
 
-# The website uses a lot of lists to access miscellaneous links to other parts of the website, what we're looking for is in the 60th to 68th list tag
+# The website uses a lot of lists to access miscellaneous links to other parts of the website, what we're looking for is in the 60th to 68th list tag and 169 to 172
 top_skills_from_seventh_site <- top_skills_with_li_tag_on_reddit[c(60:68, 169:172)]
 
 top_skills_from_seventh_site
@@ -271,9 +271,8 @@ top_10_skills_from_ninth_site
 ### Scraping Data from the Tenth Website
 
 ```{r tenth-site}
-# This is the link to the tenth site, but access is denied so we used waybackmachine to access the top skills from the site
-
-tenth_site <- read_html("http://web.archive.org/web/20230922160032/https://www.indeed.com/career-advice/resumes-cover-letters/skills-for-a-data-scientist")
+# Access is denied so we used waybackmachine version to access the top skills from the site
+tenth_site <- html_data[[10]]
 
 top_skills_from_tenth_site <- tenth_site |>
   html_elements('h3') |>

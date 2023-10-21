@@ -9,13 +9,13 @@ output: pdf_document
 
 ## Introduction
 
-The advent of data science has created a paradigm shift in how we approach problem-solving across various industries. Data science skills are increasingly becoming indispensable, but what skills are most valued in this domain? Our class was tasked with a collaborative project to explore this very question.
+The advent of data science has created a paradigm shift in how we approach problem-solving across various industries. Data science skills are increasingly becoming indispensable, but what skills are most valued in this domain? Our class was tasked with a project to explore this very question.
 
-Our objective is to identify the most valued skills in data science through data-driven analysis and to collaborate effectively as a virtual team and share our findings in a presentation.
+Our objective is to identify the most valued skills in data science and to collaborate effectively as a virtual team and share our findings in a presentation.
 
-We used R programming to automate the process of data collection, transformation, and analysis.
+We used R to automate the process of data collection, transformation, and analysis.
 
-Employed various R packages like `tidyverse`, `jsonlite`, `httr`, `rvest`, and `ggplot2` for web scraping, data manipulation, and visualization.
+We used various R packages like `tidyverse`, `jsonlite`, `httr`, `rvest`, and `ggplot2` for web scraping, data manipulation, and visualization.
 
 We utilized Google Custom Search Engine API to gather data from top websites related to data science skills.
 
@@ -68,16 +68,21 @@ Web scraping the top 10 sites
 
 ```{r}
 # Store the links here
-links_to_site <- search$link
+#links_to_site <- search$link
 
-#links_to_site=read.csv(url("https://raw.githubusercontent.com/Mattr5541/DATA_607_Project_3/main/links_to_site.csv"))
 
-# actual_links_to_site=links_to_site$x
+
+links_to_site=read.csv("links_to_site.csv")
+
+ actual_links_to_site=links_to_site$x
+ html_data <- lapply(actual_links_to_site, read_html)
+ 
 
 # The html data scraped from each site will be stored here
 # It's only the first 9 because we get an access denied to the tenth website
 # Fortunately we can use waybackmachine for the tenth website
-html_data <- lapply(links_to_site[1:9], read_html)
+
+#html_data <- lapply(links_to_site[1:9], read_html)
 
 
 # Function to remove numeric prefixes if there is any, the : post fix along with trailing white spaces
@@ -129,7 +134,7 @@ second_site |>
 print(links_to_site[2])
 
 # Fortunately, you can view the whole thing in wayback machine
-second_site <- read_html("http://web.archive.org/web/20200106015115/https://towardsdatascience.com/top-10-skills-for-a-data-scientist-in-2020-2b8e6122a742?gi=a52933951057")
+#second_site <- read_html("http://web.archive.org/web/20200106015115/https://towardsdatascience.com/top-10-skills-for-a-data-scientist-in-2020-2b8e6122a742?gi=a52933951057")
 
 top_10_skills_from_second_site <- second_site |>
   html_elements("h1") |>
@@ -258,7 +263,6 @@ Scraping Data from the Tenth Website
 
 ```{r tenth-site}
 # This is the link to the tenth site, but access is denied so we used waybackmachine to access the top skills from the site
-print(links_to_site[10])
 
 tenth_site <- read_html("http://web.archive.org/web/20230922160032/https://www.indeed.com/career-advice/resumes-cover-letters/skills-for-a-data-scientist")
 
@@ -273,7 +277,7 @@ top_skills_from_tenth_site
 
 ## Cleaning Data
 
-The data cleaning phase was a crucial step in refining the raw data we scraped from various websites. We began by aggregating the lists of skills from each source into a single collection, labeled `all_top_skills`. To ensure uniformity and facilitate easier analysis, all skill names were converted to lowercase and any special characters were removed, yielding a new dataset called `cleaned_top_skills`.
+The data cleaning phase was a crucial step in refining the raw data we scraped from various websites. We began by aggregating the lists of skills from each source into a single collection, labeled `all_top_skills`. To ensure uniformity and facilitate easier analysis, all skill names were converted to lowercase and any special characters were removed, making a new dataset called `cleaned_top_skills`.
 
 To categorize the skills in a meaningful way, we defined a standard set of skill categories, such as "Statistical Analysis," "Machine Learning & AI," and "Data Visualization," among others. These predefined categories acted as a guideline for mapping the cleaned skills. We then initiated an empty list, `mapped_skills`, to store these categorized skills.
 
@@ -291,7 +295,7 @@ all_top_skills= c(technical_skills_from_first_site,top_10_skills_from_second_sit
 cleaned_top_skills = tolower(gsub("[^[:alnum:] ]", "", all_top_skills))
 
 #predefined list of skills
-standard_skills <- c("Statistical Analysis", 
+standard_skills = c("Statistical Analysis", 
                      "Machine Learning & AI", 
                      "Data Processing & Wrangling", 
                      "Data Visualization", 
@@ -337,9 +341,9 @@ for(skill in cleaned_top_skills) {
     mapped_skills = append(mapped_skills, "Data Management & Transformation")
   } else if (grepl("model deployment|neural networks|algorithms", skill_lower)) {
     mapped_skills = append(mapped_skills, "Modeling & Algorithms")
-  } else if (grepl("problem solving|critical thinking|effective communication", skill_lower)) {
+  } else if (grepl("soft skills|interpersonal|communication", skill_lower)) {
     mapped_skills = append(mapped_skills, "Soft Skills")
-  } else if (grepl("sas|devops|hadoop|specialized tools", skill_lower)) {
+  } else if (grepl("sas|devops|hadoop|specialized tools|tableau|powerbi|docker", skill_lower)) {
     mapped_skills = append(mapped_skills, "Specialized Technologies")
   } else {
     mapped_skills = append(mapped_skills, "Other")
@@ -348,18 +352,9 @@ for(skill in cleaned_top_skills) {
 
 
 aggregated_skills = table(unlist(mapped_skills))
-
 sorted_skills = sort(aggregated_skills, decreasing = TRUE)
-
 sorted_skills_df = as.data.frame(sorted_skills)
-
-
 colnames(sorted_skills_df) = c("Skill Category", "Frequency")
-
-
-
-
-
 ```
 
 ## Data Visualization
@@ -384,20 +379,30 @@ ggplot(sorted_skills_df_filtered, aes(x=reorder(`Skill Category`, -Frequency), y
 ```
 
 ```{r}
-sorted_skills_df = as.data.frame(sorted_skills)
+
+sorted_skills_df = sorted_skills_df[sorted_skills_df$`Skill Category` != "Other", ]
 
 
-sorted_skills_df = sorted_skills_df[sorted_skills_df$Var1 != "Other",]
+sorted_skills_df = sorted_skills_df[!is.na(sorted_skills_df$Frequency) & sorted_skills_df$Frequency > 0, ]
+sorted_skills_df$Frequency = as.numeric(sorted_skills_df$Frequency)
 
 
-wordcloud(words = sorted_skills_df$Var1, 
-          freq = sorted_skills_df$Freq, 
-          min.freq = 2,  
-          max.words = 100,  
+colnames(sorted_skills_df) = c("Skill Category", "Frequency")
+
+
+
+wordcloud(words = sorted_skills_df[["Skill Category"]], 
+          freq = sorted_skills_df$Frequency, 
+          min.freq = 2,
+          max.words = 100, 
           random.order = FALSE, 
           rot.per = 0.2, 
-          scale=c(4, 0.5),  
-          colors = brewer.pal(8, "Dark2"))
+          scale = c(2, 0.2),  # Adjust the scale if needed
+          colors = brewer.pal(8, "Dark2"),
+          vfont = c("sans serif", "plain"))
+
+
+
 ```
 
 ```{r}
@@ -407,13 +412,19 @@ total_occurrences = sum(sorted_skills)
 #proportion to total
 proportion_skills = round((sorted_skills / total_occurrences) * 100, 2)
 
-# new table wih proportion
+
 new_table = data.frame("Skill" = names(proportion_skills), "Proportion (%)" = as.vector(proportion_skills))
 
-#pie chart
-pie(proportion_skills, labels = paste(names(proportion_skills), "\n", proportion_skills, "%"),
+proportion_skills_tibble = tibble(Skill = names(proportion_skills), Proportion = as.vector(proportion_skills))
+
+
+filtered_proportion_skills_tibble = proportion_skills_tibble %>% filter(Skill != "Other")
+
+
+pie(filtered_proportion_skills_tibble$Proportion, 
+    labels = paste(filtered_proportion_skills_tibble$Skill, "\n", filtered_proportion_skills_tibble$Proportion, "%"),
     main = "Proportion of Skills",
-    col = rainbow(length(proportion_skills)),
+    col = rainbow(nrow(filtered_proportion_skills_tibble)),
     cex = 0.8)
 
 
@@ -422,13 +433,13 @@ pie(proportion_skills, labels = paste(names(proportion_skills), "\n", proportion
 ```{r}
 #bar plot
 
-barplot(proportion_skills, 
-        names.arg = names(proportion_skills), 
+barplot(filtered_proportion_skills_tibble$Proportion,
+        names.arg = filtered_proportion_skills_tibble$Skill,
         las = 2,
         main = "Proportion of Skills (%)",
         ylab = "Proportion (%)",
         xlab = "Skills",
-        col = rainbow(length(proportion_skills)))
+        col = rainbow(nrow(filtered_proportion_skills_tibble)))
 
 ```
 

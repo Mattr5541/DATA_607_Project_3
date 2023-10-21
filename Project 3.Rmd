@@ -100,7 +100,9 @@ remove_numeric_prefix_whitespaces <- function(input_vector) {
 }
 ```
 
-Scraping data from the first website
+Each website was unique in the way the data was set up. To retrieve them, we manually coded scraping from each of the website. To do this, we looked at the structure of the html data and coded accordingly to extract the appropriate data.
+
+### Scraping data from the first website
 
 ```{r first-website}
 first_site <- html_data[[1]]
@@ -129,7 +131,7 @@ technical_skills_from_first_site
 non_technical_skills_from_first_site
 ```
 
-Scraping Data from the Second Site:
+### Scraping Data from the Second Site:
 
 ```{r second-site}
 # Unfortunately it requires an account to view the article, only thing you can get is the first skill
@@ -153,7 +155,7 @@ top_10_skills_from_second_site <- remove_numeric_prefix_whitespaces(top_10_skill
 top_10_skills_from_second_site
 ```
 
-Scraping Data from Third Website
+### Scraping Data from Third Website
 
 ```{r third-site}
 third_site <- html_data[[3]]
@@ -169,7 +171,7 @@ top_7_skills_from_third_site <- remove_numeric_prefix_whitespaces(top_7_skills_f
 top_7_skills_from_third_site
 ```
 
-Scraping Data from the Fourth Website
+### Scraping Data from the Fourth Website
 
 ```{r fourth-site}
 fourth_site <- html_data[[4]]
@@ -185,7 +187,7 @@ top_7_skills_from_fourth_site <- remove_numeric_prefix_whitespaces(top_7_skills_
 top_7_skills_from_fourth_site
 ```
 
-Scraping Data from the Fifth Website
+### Scraping Data from the Fifth Website
 
 ```{r fifth-site}
 fifth_site <- html_data[[5]]
@@ -199,7 +201,7 @@ top_15_skills_from_fifth_site <- fifth_site |>
 top_15_skills_from_fifth_site
 ```
 
-Scraping Data from the Sixth Website
+### Scraping Data from the Sixth Website
 
 ```{r sixth-site}
 sixth_site <- html_data[[6]]
@@ -214,7 +216,7 @@ top_16_skills_from_sixth_site <- top_16_skills_from_sixth_site[1:16]
 top_16_skills_from_sixth_site
 ```
 
-Scraping Data from the Seventh Website
+### Scraping Data from the Seventh Website
 
 ```{r seventh-site}
 seventh_site <- html_data[[7]]
@@ -237,7 +239,7 @@ top_skills_from_seventh_site <- top_skills_with_li_tag_on_reddit[c(60:68, 169:17
 top_skills_from_seventh_site
 ```
 
-Scraping Data from the Eighth Website
+### Scraping Data from the Eighth Website
 
 ```{r eigth-site}
 eighth_site <- html_data[[8]]
@@ -252,7 +254,7 @@ top_10_skills_from_eighth_site <- remove_numeric_prefix_whitespaces(top_10_skill
 top_10_skills_from_eighth_site
 ```
 
-Scraping Data from the Ninth Website
+### Scraping Data from the Ninth Website
 
 ```{r ninth-site}
 ninth_site <- html_data[[9]]
@@ -266,7 +268,7 @@ top_10_skills_from_ninth_site <- remove_numeric_prefix_whitespaces(top_10_skills
 top_10_skills_from_ninth_site
 ```
 
-Scraping Data from the Tenth Website
+### Scraping Data from the Tenth Website
 
 ```{r tenth-site}
 # This is the link to the tenth site, but access is denied so we used waybackmachine to access the top skills from the site
@@ -284,13 +286,13 @@ top_skills_from_tenth_site
 
 ## Cleaning Data
 
-The data cleaning phase was a crucial step in refining the raw data we scraped from various websites. We began by aggregating the lists of skills from each source into a single collection, labeled `all_top_skills`. To ensure uniformity and facilitate easier analysis, all skill names were converted to lowercase and any special characters were removed, making a new dataset called `cleaned_top_skills`.
+The data cleaning phase was an important step in refining the raw data we scraped from various websites. We began by aggregating the lists of skills from each source into a single collection, labeled `all_top_skills`. To make sure everything was uniform and to keep data analysis consistent, all skill names were converted to lowercase and any special characters were removed, making a new dataset called `cleaned_top_skills`.
 
-To categorize the skills in a meaningful way, we defined a standard set of skill categories, such as "Statistical Analysis," "Machine Learning & AI," and "Data Visualization," among others. These predefined categories acted as a guideline for mapping the cleaned skills. We then initiated an empty list, `mapped_skills`, to store these categorized skills.
+To categorize the skills in a meaningful way, we defined a standard set of skill categories, which include "Statistical Analysis," "Machine Learning & AI," and "Data Visualization," among others after taking a look at `cleaned_top_skills`. These predefined categories acted as a guideline for mapping the cleaned skills. We then initiated an empty list, `mapped_skills`, to store these categorized skills.
 
-A loop was run through each skill in `cleaned_top_skills`, using regex matching to classify the skill into one of the predefined categories. For instance, skills containing terms like "statistics" or "probability" were mapped to the "Statistical Analysis" category. This process was repeated for each skill in the dataset, allowing us to aggregate them into broader categories meaningfully.
+A loop was run through each skill in `cleaned_top_skills`, using regex matching to classify the skill into one of the predefined categories. For example, skills containing terms like "statistics" or "probability" were mapped to the "Statistical Analysis" category.
 
-After this categorization, we calculated the frequency of each skill category to understand its prevalence in the data science industry. This was stored in a table called `aggregated_skills`, which was then sorted in descending order based on frequency to create `sorted_skills_df`. The resulting DataFrame served as the cleaned and organized dataset ready for further analysis and visualization.
+After this categorization, we calculated the frequency of each skill category to understand its prevalence in the data science industry. This was stored in a table called `aggregated_skills`, which was then sorted in descending order based on frequency to create `sorted_skills_df`.
 
 ```{r}
 #combining all top skills
@@ -502,3 +504,13 @@ cat("-----------------------------------------------------------\n")
 
 
 ```
+
+### Future Directions
+
+While our project provides valuable insights into the most sought-after skills in data science, it's important to acknowledge some limitations and areas for future improvement. One notable issue is the inefficiency in data collection and categorization. Our methodology led to a large number of uncategorized skills falling into the 'Other' category. This is because websites use various frameworks and language to list data science skills, making it challenging to automate the categorization process effectively.
+
+For future work, implementing advanced natural language processing techniques, such as using GPT-4 or other Large Language Models (LLMs), could significantly improve data extraction and categorization. These models can analyze the HTML data from each site, extract the skills listed, and categorize them effectively, reducing the need for manual intervention. This approach would also make the project less dependent on the structure of individual websites, mitigating the issue we faced of websites changing their structure and thereby breaking our code. In fact, using archived pages would become less necessary as LLMs could adapt to changes in website structure.
+
+Another avenue for improvement is sourcing data from more consistent platforms or databases, perhaps academic publications or industry reports that have already aggregated this type of information. By doing so, we could reduce the variability introduced by using multiple websites with differing structures and terminologies.
+
+In conclusion, future directions could involve leveraging advanced machine learning models for more efficient and accurate data extraction and categorization, as well as diversifying the data sources to include more standardized and reliable platforms. Both these improvements could make our analysis more robust, comprehensive, and adaptable to changes over time.

@@ -2,7 +2,9 @@
 title: "Project 3"
 author: "Matthew Roland, Jean Jimenez, Kelly Eng"
 date: "2023-10-17"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Team Android Project #3
@@ -429,11 +431,17 @@ proportion_skills_tibble = tibble(Skill = names(proportion_skills), Proportion =
 filtered_proportion_skills_tibble = proportion_skills_tibble %>% filter(Skill != "Other")
 
 
-pie(filtered_proportion_skills_tibble$Proportion, 
-    labels = paste(filtered_proportion_skills_tibble$Skill, "\n", filtered_proportion_skills_tibble$Proportion, "%"),
-    main = "Proportion of Skills",
-    col = rainbow(nrow(filtered_proportion_skills_tibble)),
-    cex = 0.8)
+# pie(filtered_proportion_skills_tibble$Proportion,
+#     labels = paste(filtered_proportion_skills_tibble$Skill, "\n", filtered_proportion_skills_tibble$Proportion, "%"),
+#     main = "Proportion of Skills",
+#     col = rainbow(nrow(filtered_proportion_skills_tibble)),
+#     radius = 1,
+#     cex = 0.7)
+
+ggplot(filtered_proportion_skills_tibble, aes(x = "", y = Proportion, fill = Skill)) +
+  geom_bar(stat = "identity") +
+  coord_polar(theta = "y") +
+  labs(title = "Proportion of Skills")
 
 
 ```
@@ -441,13 +449,19 @@ pie(filtered_proportion_skills_tibble$Proportion,
 ```{r}
 #bar plot
 
-barplot(filtered_proportion_skills_tibble$Proportion,
-        names.arg = filtered_proportion_skills_tibble$Skill,
-        las = 2,
-        main = "Proportion of Skills (%)",
-        ylab = "Proportion (%)",
-        xlab = "Skills",
-        col = rainbow(nrow(filtered_proportion_skills_tibble)))
+# barplot(filtered_proportion_skills_tibble$Proportion,
+#         names.arg = filtered_proportion_skills_tibble$Skill,
+#         las = 2,
+#         main = "Proportion of Skills (%)",
+#         ylab = "Proportion (%)",
+#         xlab = "Skills",
+#         col = rainbow(nrow(filtered_proportion_skills_tibble)))
+
+ggplot(filtered_proportion_skills_tibble, aes(x = Skill, y = Proportion, fill = Skill)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Proportion of Skills (%)", y = "Proportion (%)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
 
 ```
 

@@ -11,7 +11,7 @@ This project aims to identify the most valued skills in data science. We used R 
 ## Repository Files
 
 - `Project 3.rmd`: This is the main project file containing all the code and documentation.
-- `links_to_sites.csv`: This file contains the URLs of top websites related to data science skills, which are used for web scraping.
+- `links_to_sites.csv`: This file contains the URLs of top websites found from the webscraping result.
 
 ## Summary
 

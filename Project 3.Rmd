@@ -68,15 +68,16 @@ Web scraping the top 10 sites
 
 ```{r}
 # Store the links here
-#links_to_site <- search$link
+links_to_site <- search$link
 
-links_to_site=read.csv(url("https://raw.githubusercontent.com/Mattr5541/DATA_607_Project_3/main/links_to_site.csv"))
+#links_to_site=read.csv(url("https://raw.githubusercontent.com/Mattr5541/DATA_607_Project_3/main/links_to_site.csv"))
 
-actual_links_to_site=links_to_site$x
+# actual_links_to_site=links_to_site$x
 
 # The html data scraped from each site will be stored here
-
-html_data <- lapply(actual_links_to_site, read_html)
+# It's only the first 9 because we get an access denied to the tenth website
+# Fortunately we can use waybackmachine for the tenth website
+html_data <- lapply(links_to_site[1:9], read_html)
 
 
 # Function to remove numeric prefixes if there is any, the : post fix along with trailing white spaces
@@ -206,10 +207,22 @@ Scraping Data from the Seventh Website
 ```{r seventh-site}
 seventh_site <- html_data[[7]]
 
-# This is only letting me get things from the person that made the post on reddit & not the comments
-top_skills_from_seventh_site <- seventh_site |>
+# This is only letting us get things from the person that made the post on reddit & not anything from the comments. The top comment uses the li tag for listing the top skills
+seventh_site |>
   html_elements('p') |>
   html_text2()
+
+# We have to use the old version of reddit in order to scrape results from the comments
+seventh_site <- read_html("https://old.reddit.com/r/datascience/comments/y78uss/what_technologiesskills_should_a_data_scientist/")
+
+top_skills_with_li_tag_on_reddit <- seventh_site |>
+  html_elements('li') |>
+  html_text2()
+
+# The website uses a lot of lists to access miscellaneous links to other parts of the website, what we're looking for is in the 60th to 68th list tag
+top_skills_from_seventh_site <- top_skills_with_li_tag_on_reddit[c(60:68, 169:172)]
+
+top_skills_from_seventh_site
 ```
 
 Scraping Data from the Eighth Website
@@ -244,13 +257,16 @@ top_10_skills_from_ninth_site
 Scraping Data from the Tenth Website
 
 ```{r tenth-site}
-tenth_site <- html_data[[10]]
+# This is the link to the tenth site, but access is denied so we used waybackmachine to access the top skills from the site
+print(links_to_site[10])
+
+tenth_site <- read_html("http://web.archive.org/web/20230922160032/https://www.indeed.com/career-advice/resumes-cover-letters/skills-for-a-data-scientist")
 
 top_skills_from_tenth_site <- tenth_site |>
   html_elements('h3') |>
   html_text2()
 
-top_skills_from_tenth_site <- remove_numeric_prefix_whitespaces(top_skills_from_tenth_site[c(2:9, 11:14)])
+top_skills_from_tenth_site <- remove_numeric_prefix_whitespaces(top_skills_from_tenth_site)
 
 top_skills_from_tenth_site
 ```
@@ -268,13 +284,13 @@ After this categorization, we calculated the frequency of each skill category to
 ```{r}
 #combining all top skills
 
-all_top_skills= c(technical_skills_from_first_site,top_10_skills_from_second_site,top_7_skills_from_third_site,top_7_skills_from_fourth_site,top_15_skills_from_fifth_site,top_16_skills_from_sixth_site,top_10_skills_from_eighth_site,top_10_skills_from_ninth_site,top_skills_from_tenth_site)
+all_top_skills= c(technical_skills_from_first_site,top_10_skills_from_second_site,top_7_skills_from_third_site,top_7_skills_from_fourth_site,top_15_skills_from_fifth_site,top_16_skills_from_sixth_site,top_skills_from_seventh_site, top_10_skills_from_eighth_site,top_10_skills_from_ninth_site,top_skills_from_tenth_site)
 
 
 # Convert to lowercase and remove special chars
 cleaned_top_skills = tolower(gsub("[^[:alnum:] ]", "", all_top_skills))
 
-#predifined list of skills
+#predefined list of skills
 standard_skills <- c("Statistical Analysis", 
                      "Machine Learning & AI", 
                      "Data Processing & Wrangling", 

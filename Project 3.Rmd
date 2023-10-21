@@ -35,9 +35,9 @@ library(ggplot2)
 library(wordcloud)
 ```
 
-## 
+To find the top skills in data science, we used google search api to search sites for "Top Data Science Skills. An API key (`api_key`) is specified, which is used for authenticating requests to Google's API services. A query string (`query`) is defined as "top data science skills", which serves as the search keyword for the Custom Search Engine. A Custom Search Engine ID (`CSE`) is provided, which is unique to the user's programmable search engine created via Google's API. The `GET()` function is used to send an HTTP GET request to the Google API. The request is constructed with the API key, Custom Search Engine ID, and the query string as parameters. The API's response is stored in the variable `response`, which is in JSON format. The `fromJSON()` function is used to parse this JSON data into an R data structure, stored in the variable `results`. Finally, the `items` field from the `results` is extracted into the variable `search`, which contains the list of websites that match the query "top data science skills".
 
-```{r}
+```{r eval=FALSE, echo=FALSE}
 ##Define the API Key
 api_key <- 'AIzaSyAHTiNfCrJXM4-JdDtteyJflaR-rCI9yxc'
 
@@ -60,22 +60,29 @@ response <- GET(
 ##This code will parse the JSON list into an R data structure
 results <- fromJSON(content(response, "text"))
 search <- results$items
+
+# Store the links here
+links_to_site <- search$link
+write.csv(links_to_site, "links_to_site.csv")
 ```
 
 ## Web Scraping
 
-Web scraping the top 10 sites
+Web scraping the top 10 sites.
+
+Instead of directly pulling from the search API, a CSV file containing the search results is used. This is done to maintain consistency in the data, as search results can change each time the query is run. The initial search results were saved to a CSV file using the `write.csv` function. This ensures that everyone involved in the project is working with the same set of data, making the process reproducible without errors.
+
+We first start by reading the CSV file from a GitHub URL using `read.csv()`. The `lapply()` function combined with `read_html()` is then used to scrape HTML data from each of these sites. This HTML data is stored in a list named `html_data`.
+
+Note, some site accesses were denied. Therefore, we edited the search result links to wayback machine archived linked in order to access them.
+
+Lastly, a function called `remove_numeric_prefix_whitespaces` is madeto clean up the scraped data by removing any numeric prefixes and trailing white spaces from a given vector of strings.
 
 ```{r}
-# Store the links here
-#links_to_site <- search$link
+links_to_site=read.csv(url("https://raw.githubusercontent.com/Mattr5541/DATA_607_Project_3/main/links_to_site.csv"))
 
-
-
-links_to_site=read.csv("links_to_site.csv")
-
- actual_links_to_site=links_to_site$x
- html_data <- lapply(actual_links_to_site, read_html)
+actual_links_to_site=links_to_site$x
+html_data <- lapply(actual_links_to_site, read_html)
  
 
 # The html data scraped from each site will be stored here
@@ -473,11 +480,12 @@ for(i in 1:3) {
 
 #least freq
 least_skills = tail(sorted_skills, 3)
+least_prop=tail(proportion_skills,3)
 cat("\nLeast Frequent Skills:\n")
 for(i in 1:3) {
   skill_name = names(least_skills)[i]
   skill_freq = least_skills[i]
-  skill_prop = proportion_skills[i]
+  skill_prop = least_prop[i]
   cat(paste(i, ". ", skill_name, "(", skill_freq, "occurrences, ", skill_prop, "%)", "\n"))
 }
 
@@ -485,10 +493,10 @@ cat("\n-----------------------------------------------------------\n")
 
 # General Conclusions
 cat("General Conclusions:\n")
-cat("1. Machine Learning & AI is the most sought-after skill, indicating a strong demand in this area.\n")
-cat("2. Big Data & Cloud Computing and Business & Communication Skills are equally important, showing the need for both technical and soft skills.\n")
-cat("3. Skills like Problem Solving & Critical Thinking are less frequent, suggesting they are either specialized or assumed skills.\n")
-
+cat("1. Big Data & Cloud Computing has overtaken other skills in frequency, signaling a growing emphasis on data scalability and cloud-based solutions in the industry.\n")
+cat("2. Machine Learning & AI closely follows in second, indicating a sustained, high demand for skills in artificial intelligence and machine learning. This suggests that expertise in these areas is highly valued.\n")
+cat("3. Business & Communication Skills also feature prominently, emphasizing the importance of not just technical know-how but also the ability to communicate and work well.\n")
+cat("4. Skills like Modeling & Algorithms, Soft Skills, and Specialized Technologies are least frequent. Their lower occurrence could imply that they are either highly specialized skills or perhaps are assumed to be part of other broader skill sets.\n")
 cat("-----------------------------------------------------------\n")
 
 

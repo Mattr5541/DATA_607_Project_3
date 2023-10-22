@@ -221,7 +221,7 @@ top_16_skills_from_sixth_site
 ### Scraping Data from the Seventh Website
 
 ```{r seventh-site}
-#seventh_site <- read_html("https://www.reddit.com/r/datascience/comments/y78uss/what_technologiesskills_should_a_data_scientist/")
+seventh_site <- read_html("https://www.reddit.com/r/datascience/comments/y78uss/what_technologiesskills_should_a_data_scientist/")
 
 # This is only letting us get things from the person that made the post on reddit & not anything from the comments. The top comment uses the li tag for listing the top skills
 seventh_site |>

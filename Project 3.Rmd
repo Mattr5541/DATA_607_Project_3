@@ -2,7 +2,9 @@
 title: "Project 3"
 author: "Matthew Roland, Jean Jimenez, Kelly Eng"
 date: "2023-10-17"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Team Android Project #3
@@ -237,6 +239,8 @@ top_skills_with_li_tag_on_reddit <- seventh_site |>
 top_skills_from_seventh_site <- top_skills_with_li_tag_on_reddit[c(60:68, 169:172)]
 
 top_skills_from_seventh_site
+
+
 ```
 
 ### Scraping Data from the Eighth Website
@@ -414,6 +418,11 @@ wordcloud(words = sorted_skills_df[["Skill Category"]],
 ```
 
 ```{r}
+#rmv other
+if ('Other' %in% names(sorted_skills)) {
+  sorted_skills = sorted_skills[names(sorted_skills) != 'Other']
+}
+
 #total occrences not other
 total_occurrences = sum(sorted_skills)
 
@@ -429,11 +438,17 @@ proportion_skills_tibble = tibble(Skill = names(proportion_skills), Proportion =
 filtered_proportion_skills_tibble = proportion_skills_tibble %>% filter(Skill != "Other")
 
 
-pie(filtered_proportion_skills_tibble$Proportion, 
-    labels = paste(filtered_proportion_skills_tibble$Skill, "\n", filtered_proportion_skills_tibble$Proportion, "%"),
-    main = "Proportion of Skills",
-    col = rainbow(nrow(filtered_proportion_skills_tibble)),
-    cex = 0.8)
+# pie(filtered_proportion_skills_tibble$Proportion,
+#     labels = paste(filtered_proportion_skills_tibble$Skill, "\n", filtered_proportion_skills_tibble$Proportion, "%"),
+#     main = "Proportion of Skills",
+#     col = rainbow(nrow(filtered_proportion_skills_tibble)),
+#     radius = 1,
+#     cex = 0.7)
+
+ggplot(filtered_proportion_skills_tibble, aes(x = "", y = Proportion, fill = Skill)) +
+  geom_bar(stat = "identity") +
+  coord_polar(theta = "y") +
+  labs(title = "Proportion of Skills")
 
 
 ```
@@ -441,13 +456,19 @@ pie(filtered_proportion_skills_tibble$Proportion,
 ```{r}
 #bar plot
 
-barplot(filtered_proportion_skills_tibble$Proportion,
-        names.arg = filtered_proportion_skills_tibble$Skill,
-        las = 2,
-        main = "Proportion of Skills (%)",
-        ylab = "Proportion (%)",
-        xlab = "Skills",
-        col = rainbow(nrow(filtered_proportion_skills_tibble)))
+# barplot(filtered_proportion_skills_tibble$Proportion,
+#         names.arg = filtered_proportion_skills_tibble$Skill,
+#         las = 2,
+#         main = "Proportion of Skills (%)",
+#         ylab = "Proportion (%)",
+#         xlab = "Skills",
+#         col = rainbow(nrow(filtered_proportion_skills_tibble)))
+
+ggplot(filtered_proportion_skills_tibble, aes(x = Skill, y = Proportion, fill = Skill)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Proportion of Skills (%)", y = "Proportion (%)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
 
 ```
 
@@ -458,10 +479,7 @@ cat("-----------------------------------------------------------\n")
 cat("Summary and Conclusions Based on the Skill Distribution\n")
 cat("-----------------------------------------------------------\n")
 
-#rmv other
-if ('Other' %in% names(sorted_skills)) {
-  sorted_skills = sorted_skills[names(sorted_skills) != 'Other']
-}
+
 
 #calc prop
 proportion_skills = round((sorted_skills / total_occurrences) * 100, 2)
@@ -489,6 +507,10 @@ for(i in 1:3) {
   skill_prop = least_prop[i]
   cat(paste(i, ". ", skill_name, "(", skill_freq, "occurrences, ", skill_prop, "%)", "\n"))
 }
+
+
+cat("\nThere were",total_occurrences, "skills that were sorted into categories\n")
+
 
 cat("\n-----------------------------------------------------------\n")
 

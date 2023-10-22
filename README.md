@@ -2,8 +2,9 @@
 
 ## Authors
 - [Matthew Roland](https://github.com/Mattr5541)
-- [Jean Jimenez](https://github.com/sleepysloth12)
 - [Kelly Eng](https://github.com/autistic96)
+- [Jean Jimenez](https://github.com/sleepysloth12)
+
 
 ## Introduction
 This project aims to identify the most valued skills in data science. We used R for data collection, transformation, and analysis, and utilized various R packages and the Google Custom Search Engine API for web scraping.

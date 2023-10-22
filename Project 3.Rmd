@@ -221,7 +221,7 @@ top_16_skills_from_sixth_site
 ### Scraping Data from the Seventh Website
 
 ```{r seventh-site}
-seventh_site <- read_html("https://www.reddit.com/r/datascience/comments/y78uss/what_technologiesskills_should_a_data_scientist/")
+#seventh_site <- read_html("https://www.reddit.com/r/datascience/comments/y78uss/what_technologiesskills_should_a_data_scientist/")
 
 # This is only letting us get things from the person that made the post on reddit & not anything from the comments. The top comment uses the li tag for listing the top skills
 seventh_site |>
@@ -239,6 +239,8 @@ top_skills_with_li_tag_on_reddit <- seventh_site |>
 top_skills_from_seventh_site <- top_skills_with_li_tag_on_reddit[c(60:68, 169:172)]
 
 top_skills_from_seventh_site
+
+
 ```
 
 ### Scraping Data from the Eighth Website
@@ -416,6 +418,11 @@ wordcloud(words = sorted_skills_df[["Skill Category"]],
 ```
 
 ```{r}
+#rmv other
+if ('Other' %in% names(sorted_skills)) {
+  sorted_skills = sorted_skills[names(sorted_skills) != 'Other']
+}
+
 #total occrences not other
 total_occurrences = sum(sorted_skills)
 
@@ -472,10 +479,7 @@ cat("-----------------------------------------------------------\n")
 cat("Summary and Conclusions Based on the Skill Distribution\n")
 cat("-----------------------------------------------------------\n")
 
-#rmv other
-if ('Other' %in% names(sorted_skills)) {
-  sorted_skills = sorted_skills[names(sorted_skills) != 'Other']
-}
+
 
 #calc prop
 proportion_skills = round((sorted_skills / total_occurrences) * 100, 2)
@@ -503,6 +507,10 @@ for(i in 1:3) {
   skill_prop = least_prop[i]
   cat(paste(i, ". ", skill_name, "(", skill_freq, "occurrences, ", skill_prop, "%)", "\n"))
 }
+
+
+cat("\nThere were",total_occurrences, "skills that were sorted into categories\n")
+
 
 cat("\n-----------------------------------------------------------\n")
 
